@@ -13,10 +13,11 @@ namespace Portal.Web.Controllers
     using Portal.Web.Models;
 
     [Authorize]
-    [RoutePrefix("api/Account")]
+    [RoutePrefix("api")]
     public class AccountController : ApiController
     {
         private ApplicationUserManager _userManager;
+        private const int InitialMoney = 1000;
 
         public AccountController()
         {
@@ -59,12 +60,12 @@ namespace Portal.Web.Controllers
             var requestParams = new List<KeyValuePair<string, string>>
     {
         new KeyValuePair<string, string>("grant_type", "password"),
-        new KeyValuePair<string, string>("username", model.Email),
+        new KeyValuePair<string, string>("username", model.Username),
         new KeyValuePair<string, string>("password", model.Password)
     };
             var requestParamsFormUrlEncoded = new FormUrlEncodedContent(requestParams);
             var tokenServiceResponse = await testServer.HttpClient.PostAsync(
-                "/api/Token", requestParamsFormUrlEncoded);
+                "/Token", requestParamsFormUrlEncoded);
 
             return this.ResponseMessage(tokenServiceResponse);
         }
@@ -88,7 +89,8 @@ namespace Portal.Web.Controllers
             var user = new User
             {
                 UserName = model.UserName,
-                Email = model.Email
+                Email = model.Email,
+                Money = InitialMoney
             };
 
             var identityResult = await this.UserManager.CreateAsync(user, model.Password);
@@ -101,7 +103,7 @@ namespace Portal.Web.Controllers
             // Auto login after registrаtion (successful user registration should return access_token)
             var loginResult = await this.LoginUser(new LoginBindingModel()
             {
-                Email = model.Email,
+                Username = model.UserName,
                 Password = model.Password
             });
             return loginResult;
